@@ -1,1 +1,2 @@
-# Bitburner Scripts: netscript
+# Bitburner Scripts
+## DETAILS TBA
