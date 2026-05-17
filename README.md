@@ -1,2 +1,2 @@
 # Bitburner Scripts
-## DETAILS TBA
+Import Export: A system made for importing and exporting other scripts via base64
