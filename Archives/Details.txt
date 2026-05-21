@@ -1,1 +1,3 @@
-Details:
+Details
+
+"name unknown": After Git
