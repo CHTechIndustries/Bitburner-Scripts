@@ -1,0 +1,1 @@
+An archive for scripts which just got straight up exported, without using things like VS. Thus, the iterations and commits will be too simple, but the contents will be helpful
