@@ -131,6 +131,7 @@ export async function main(ns) {
             map[server] = {
                 parentServer: parent,
                 hasRoot: ns.hasRootAccess(server),
+                backdoored: false,
                 requiredHack: ns.getServerRequiredHackingLevel(server),
                 portsRequired: ns.getServerNumPortsRequired(server),
                 maxMoney: ns.getServerMaxMoney(server),
