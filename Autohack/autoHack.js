@@ -2,24 +2,16 @@
 export async function main(ns) {
     const SERVER_FILE = "serverMap.json";
     const PLAYER_FILE = "playerState.json";
-    // =========================
-    // INITIAL PASS FLAGS
-    // =========================
-    const resetHacked =
-        ns.args[0] === "re" ||
-        ns.getHackingLevel() === 1;
-    if(resetHacked) {
-            ns.rm(SERVER_FILE);
-    }
+
+    let serverMap = buildMap(ns);
     let lastHack = ns.getHackingLevel();
     let lastPrograms = getPrograms(ns);
-    let serverMap = buildMap(ns);
 
     // =========================
     // INITIAL PASS
     // =========================
     savePlayerState(ns, lastHack, lastPrograms);
-    processServers(ns, serverMap, lastHack, lastPrograms);
+    await processServers(ns, serverMap, lastHack, lastPrograms);
 
     let loop = 0;
 
@@ -43,7 +35,7 @@ export async function main(ns) {
         }
 
         // process servers
-        processServers(ns, serverMap, hack, programs);
+        await processServers(ns, serverMap, hack, programs);
 
         lastHack = hack;
         lastPrograms = programs;
@@ -56,7 +48,7 @@ export async function main(ns) {
     // =========================
     // CORE PROCESSING
     // =========================
-    function processServers(ns, map, hack, programs) {
+    async function processServers(ns, map, hack, programs) {
 
         for (const [name, data] of Object.entries(map)) {
 
@@ -78,7 +70,20 @@ export async function main(ns) {
 
             ns.print(`Rooted: ${name}`);
             data.hasRoot = true;
+            const pid = ns.exec("hackingController.js", "home", 1, name);
 
+            if (pid === 0) {
+                ns.tprint(`Failed to start hackingController for ${name}`);
+                continue;
+                
+            }
+
+            // Wait until controller finishes
+            while (ns.isRunning(pid)) {
+                // Optional: show status
+                ns.print(`Waiting on ${name}...`);
+                await ns.sleep(1000);
+             }
             // SPECIAL SERVER CHECK (backdoor targets)
             const special = getSpecial(name);
 
@@ -93,15 +98,6 @@ export async function main(ns) {
                 ns.tprint(`Next step: connect + backdoor`);
 
                 data.specialTriggered = true;
-            }
-
-            // LAUNCH HACK SCRIPT (no restrictions)
-            const pid = ns.exec("hackingController.js", "home", 1, name);
-
-            if (pid === 0) {
-                ns.tprint(`Failed to start hackingController for ${name}`);
-            } else {
-                ns.print(`Started hackingController on ${name}`);
             }
         }
     }
@@ -139,8 +135,7 @@ export async function main(ns) {
                 portsRequired: ns.getServerNumPortsRequired(server),
                 maxMoney: ns.getServerMaxMoney(server),
                 minSecurity: ns.getServerMinSecurityLevel(server),
-                specialTriggered: false,
-                hacked: resetHacked ? false : true
+                specialTriggered: false
             };
 
             for (const next of ns.scan(server)) {
