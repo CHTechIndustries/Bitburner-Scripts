@@ -1,0 +1,26 @@
+/** @param {NS} ns */
+export async function main(ns) {
+    const hostname = ns.args[0];
+    const ramExp = Number(ns.args[1]);
+    const minRam = 2;
+    if (!hostname || isNaN(ramExp)) {
+        ns.tprint("Usage: run shareServer.js SERVERNAME RAM_EXPONENT");
+        return;
+    } else if (ramExp <= minRam) {
+        ns.tprint(`Ram_Exponent must be more than "${minRam}"`);
+        return;
+    }
+
+    const ram = 2 ** ramExp;
+
+    const result = ns.cloud.purchaseServer(hostname, ram);
+
+    if (!result) {
+        ns.tprint("Failed to purchase server.");
+        return;
+    }
+
+    ns.tprint(`Purchased server "${hostname}" with ${ram} GB`);
+
+    ns.exec("shareAll.js", "home", 1, hostname);
+}
