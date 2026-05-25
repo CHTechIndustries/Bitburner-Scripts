@@ -1,0 +1,70 @@
+/** @param {NS} ns **/
+export async function main(ns) {
+    const SERVER_FILE = "serverMap.json";
+
+    while (true) {
+        const map = JSON.parse(ns.read(SERVER_FILE) || "{}");
+
+        const targets = Object.entries(map)
+            .filter(([name, data]) =>
+                data.hasRoot &&
+                !data.backdoored &&
+				!data.purchased &&
+                name !== "home"
+            )
+            .map(([name]) => name);
+
+        for (const server of targets) {
+            ns.tprint(`Backdooring: ${server}`);
+
+            const path = findPath(ns, server);
+            if (!path.length) continue;
+
+            for (const hop of path) {
+                await ns.singularity.connect(hop);
+            }
+
+            await ns.singularity.installBackdoor();
+
+            await ns.singularity.connect("home");
+
+            map[server].backdoored = true;
+            ns.write(SERVER_FILE, JSON.stringify(map, null, 2), "w");
+
+            await ns.sleep(200);
+        }
+
+        await ns.sleep(10000);
+    }
+
+    function findPath(ns, target) {
+        const visited = new Set();
+        const parent = new Map();
+
+        const queue = ["home"];
+        visited.add("home");
+
+        while (queue.length > 0) {
+            const current = queue.shift();
+            const neighbors = ns.scan(current);
+
+            for (const n of neighbors) {
+                if (!visited.has(n)) {
+                    visited.add(n);
+                    parent.set(n, current);
+                    queue.push(n);
+                }
+            }
+        }
+
+        const path = [];
+        let cur = target;
+
+        while (cur && cur !== "home") {
+            path.unshift(cur);
+            cur = parent.get(cur);
+        }
+
+        return path;
+    }
+}
