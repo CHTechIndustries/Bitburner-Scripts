@@ -129,12 +129,14 @@ export async function main(ns) {
             visited.add(server);
 
             map[server] = {
-                parentServer: parent,
-                hasRoot: ns.hasRootAccess(server),
-                requiredHack: ns.getServerRequiredHackingLevel(server),
-                portsRequired: ns.getServerNumPortsRequired(server),
-                maxMoney: ns.getServerMaxMoney(server),
-                minSecurity: ns.getServerMinSecurityLevel(server),
+				parentServer: parent,
+				hasRoot: ns.hasRootAccess(server),
+				backdoored: ns.getServer(server).backdoorInstalled,
+				purchased: ns.getServer(server).purchasedByPlayer,
+				requiredHack: ns.getServerRequiredHackingLevel(server),
+				portsRequired: ns.getServerNumPortsRequired(server),
+				maxMoney: ns.getServerMaxMoney(server),
+				minSecurity: ns.getServerMinSecurityLevel(server),
                 specialTriggered: false
             };
 
