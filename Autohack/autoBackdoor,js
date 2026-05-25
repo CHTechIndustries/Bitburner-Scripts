@@ -9,6 +9,7 @@ export async function main(ns) {
             .filter(([name, data]) =>
                 data.hasRoot &&
                 !data.backdoored &&
+				!data.purchased &&
                 name !== "home"
             )
             .map(([name]) => name);
